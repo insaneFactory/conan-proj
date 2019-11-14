@@ -32,10 +32,17 @@ class Proj4Conan(ConanFile):
 		tools.get("https://download.osgeo.org/proj/%s.tar.gz" % archive, md5="9f874e227d221daf95f7858dc55dfa3e")
 		os.rename(archive, self._source_subfolder)
 		
-		tools.replace_in_file(os.path.join(self._source_subfolder, "CMakeLists.txt"), "set(PROJECT_INTERN_NAME PROJ)",
-						  '''set(PROJECT_INTERN_NAME PROJ)
-		include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-		conan_basic_setup()''')
+		tools.replace_in_file(
+			os.path.join(self._source_subfolder, "CMakeLists.txt"),
+			"set(PROJECT_INTERN_NAME PROJ)",
+			'''set(PROJECT_INTERN_NAME PROJ)
+			   include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+			   conan_basic_setup(TARGETS)''')
+
+		tools.replace_in_file(
+			os.path.join(self._source_subfolder, "src", "lib_proj.cmake"),
+			"target_link_libraries(${PROJ_CORE_TARGET} ${SQLITE3_LIBRARY})",
+			"target_link_libraries(${PROJ_CORE_TARGET} CONAN_PKG::sqlite3)")
 
 		with tools.chdir(os.path.join(self._source_subfolder, "data")):
 			tools.get("https://download.osgeo.org/proj/proj-datumgrid-%s.zip" % self._datumgrid_version)
